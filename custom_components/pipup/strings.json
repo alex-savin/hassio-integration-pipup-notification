@@ -1,0 +1,67 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Add a PiPup TV",
+        "description": "Enter the address of the Android TV running PiPup. The token is only needed if you have enabled authentication on the device.",
+        "data": {
+          "host": "Host",
+          "port": "Port",
+          "token": "Token (optional)"
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Add a PiPup TV",
+        "description": "A PiPup TV was discovered at {host}. Add it to Home Assistant? Enter a token only if authentication is enabled on the device.",
+        "data": {
+          "token": "Token (optional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Could not reach PiPup at that address."
+    },
+    "abort": {
+      "already_configured": "This PiPup TV is already configured."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Connectivity"
+      }
+    }
+  },
+  "services": {
+    "send": {
+      "name": "Send notification",
+      "description": "Show a rich pop-up notification on a PiPup TV.",
+      "fields": {
+        "title": { "name": "Title", "description": "Title text (hidden if empty)." },
+        "message": { "name": "Message", "description": "Body text (hidden if empty)." },
+        "duration": { "name": "Duration", "description": "Seconds before the notification auto-dismisses." },
+        "position": { "name": "Position", "description": "Where on screen the notification appears." },
+        "tts": { "name": "Text-to-speech", "description": "Text to speak aloud on the TV." },
+        "sound": { "name": "Sound", "description": "URI of a sound to play." },
+        "image_uri": { "name": "Image URL", "description": "Image to show (URL or base64 data URI). Animated GIFs animate." },
+        "video_uri": { "name": "Video / stream URL", "description": "Video file or live HLS/RTSP stream to play." },
+        "web_uri": { "name": "Web page URL", "description": "Web page to embed." },
+        "media_width": { "name": "Media width", "description": "Width of the media in pixels." },
+        "web_height": { "name": "Web height", "description": "Height of an embedded web page in pixels." },
+        "background_color": { "name": "Background color", "description": "Card background, [AA]RRGGBB." },
+        "title_color": { "name": "Title color", "description": "Title color, [AA]RRGGBB." },
+        "title_size": { "name": "Title size", "description": "Title text size." },
+        "message_color": { "name": "Message color", "description": "Body color, [AA]RRGGBB." },
+        "message_size": { "name": "Message size", "description": "Body text size." },
+        "corner_radius": { "name": "Corner radius", "description": "Rounds the card corners (px)." },
+        "border_color": { "name": "Border color", "description": "Border color, [AA]RRGGBB." },
+        "border_width": { "name": "Border width", "description": "Border thickness in px (requires a border color)." },
+        "icon_uri": { "name": "Icon URI", "description": "Small leading icon (URL or base64 data URI)." },
+        "show_progress": { "name": "Show progress bar", "description": "Show a countdown bar that drains over the duration." },
+        "replace": { "name": "Replace", "description": "Clear other pop-ups first instead of stacking." },
+        "callback": { "name": "Callback URL", "description": "URL that receives shown/dismissed POSTs." }
+      }
+    }
+  }
+}

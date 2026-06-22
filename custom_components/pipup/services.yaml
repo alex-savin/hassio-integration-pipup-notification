@@ -1,0 +1,119 @@
+send:
+  target:
+    entity:
+      integration: pipup
+      domain: notify
+  fields:
+    title:
+      example: "Front door"
+      selector:
+        text:
+    message:
+      example: "Someone is at the door"
+      selector:
+        text:
+          multiline: true
+    duration:
+      example: 20
+      selector:
+        number:
+          min: 1
+          max: 600
+          unit_of_measurement: seconds
+          mode: box
+    position:
+      example: 0
+      selector:
+        select:
+          options:
+            - { value: "0", label: "Top right" }
+            - { value: "1", label: "Top left" }
+            - { value: "2", label: "Bottom right" }
+            - { value: "3", label: "Bottom left" }
+            - { value: "4", label: "Center" }
+    tts:
+      example: "Someone is at the front door"
+      selector:
+        text:
+    sound:
+      selector:
+        text:
+    image_uri:
+      example: "https://camera.local/snapshot.jpg"
+      selector:
+        text:
+    video_uri:
+      example: "rtsp://camera.local/stream"
+      selector:
+        text:
+    web_uri:
+      selector:
+        text:
+    media_width:
+      example: 480
+      selector:
+        number:
+          min: 64
+          max: 1920
+          unit_of_measurement: px
+          mode: box
+    web_height:
+      selector:
+        number:
+          min: 64
+          max: 1080
+          unit_of_measurement: px
+          mode: box
+    background_color:
+      example: "#CC000000"
+      selector:
+        text:
+    title_color:
+      example: "#34D399"
+      selector:
+        text:
+    title_size:
+      selector:
+        number:
+          min: 8
+          max: 48
+          mode: box
+    message_color:
+      selector:
+        text:
+    message_size:
+      selector:
+        number:
+          min: 8
+          max: 48
+          mode: box
+    corner_radius:
+      example: 16
+      selector:
+        number:
+          min: 0
+          max: 64
+          unit_of_measurement: px
+          mode: box
+    border_color:
+      selector:
+        text:
+    border_width:
+      selector:
+        number:
+          min: 0
+          max: 16
+          unit_of_measurement: px
+          mode: box
+    icon_uri:
+      selector:
+        text:
+    show_progress:
+      selector:
+        boolean:
+    replace:
+      selector:
+        boolean:
+    callback:
+      selector:
+        text:
