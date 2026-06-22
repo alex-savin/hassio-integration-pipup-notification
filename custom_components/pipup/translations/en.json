@@ -60,7 +60,13 @@
         "icon_uri": { "name": "Icon URI", "description": "Small leading icon (URL or base64 data URI)." },
         "show_progress": { "name": "Show progress bar", "description": "Show a countdown bar that drains over the duration." },
         "replace": { "name": "Replace", "description": "Clear other pop-ups first instead of stacking." },
-        "callback": { "name": "Callback URL", "description": "URL that receives shown/dismissed POSTs." }
+        "callback": { "name": "Callback URL", "description": "URL that receives shown/dismissed POSTs." },
+        "media_position": { "name": "Media position", "description": "Where media sits relative to the text: top, bottom, left, or right." },
+        "title_alignment": { "name": "Title alignment", "description": "Align the title left, center, or right." },
+        "message_alignment": { "name": "Message alignment", "description": "Align the message left, center, or right." },
+        "animation_type": { "name": "Animation", "description": "Entrance/exit animation: none, fade, slide, or scale." },
+        "animation_duration": { "name": "Animation duration", "description": "Animation length in milliseconds." },
+        "animation_exit": { "name": "Animate on exit", "description": "Also play the animation when the notification is dismissed." }
       }
     }
   }

@@ -15,7 +15,8 @@ TVs on your network.
 - 🔎 **Zero-config discovery** — TVs running PiPup are found automatically over mDNS.
 - 🔔 **Standard notify target** — `notify.send_message` with a title and message.
 - 🎨 **Rich `pipup.send` service** — images, **live RTSP/HLS camera streams**, web
-  pages, text-to-speech, sound, colors, position, borders, progress bar, stacking.
+  pages, text-to-speech, sound, colors, borders, progress, stacking, **media
+  positioning** (top/bottom/left/right + alignment), and **entrance/exit animations**.
 - 🔐 **Token aware** — supply the device's auth token once; it's stored with the entry.
 - 📶 **Connectivity sensor** — a `binary_sensor` per TV showing whether it's reachable,
   with the PiPup version and active-popup count as attributes.
@@ -80,6 +81,10 @@ data:
   show_progress: true
   image_uri: "https://camera.local/snapshot.jpg"
   media_width: 480
+  media_position: 2          # 0 top · 1 bottom · 2 left · 3 right
+  title_alignment: 1         # 0 left · 1 center · 2 right
+  animation_type: slide      # none · fade · slide · scale
+  animation_duration: 250
 ```
 
 For a **live camera stream**, use `video_uri` with an RTSP or HLS URL (H.264):

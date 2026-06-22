@@ -34,4 +34,10 @@ FIELD_MAP: dict[str, str] = {
     "show_progress": "showProgress",
     "replace": "replace",
     "callback": "callback",
+    "media_position": "mediaPosition",
+    "title_alignment": "titleAlignment",
+    "message_alignment": "messageAlignment",
+    "animation_type": "animationType",
+    "animation_duration": "animationDuration",
+    "animation_exit": "animationExit",
 }

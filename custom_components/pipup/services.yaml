@@ -117,3 +117,46 @@ send:
     callback:
       selector:
         text:
+    media_position:
+      example: 0
+      selector:
+        select:
+          options:
+            - { value: "0", label: "Top (above text)" }
+            - { value: "1", label: "Bottom (below text)" }
+            - { value: "2", label: "Left of text" }
+            - { value: "3", label: "Right of text" }
+    title_alignment:
+      selector:
+        select:
+          options:
+            - { value: "0", label: "Left" }
+            - { value: "1", label: "Center" }
+            - { value: "2", label: "Right" }
+    message_alignment:
+      selector:
+        select:
+          options:
+            - { value: "0", label: "Left" }
+            - { value: "1", label: "Center" }
+            - { value: "2", label: "Right" }
+    animation_type:
+      example: fade
+      selector:
+        select:
+          options:
+            - none
+            - fade
+            - slide
+            - scale
+    animation_duration:
+      example: 250
+      selector:
+        number:
+          min: 0
+          max: 2000
+          unit_of_measurement: ms
+          mode: box
+    animation_exit:
+      selector:
+        boolean:

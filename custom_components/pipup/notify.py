@@ -48,6 +48,12 @@ SEND_SCHEMA = {
     vol.Optional("show_progress"): cv.boolean,
     vol.Optional("replace"): cv.boolean,
     vol.Optional("callback"): cv.string,
+    vol.Optional("media_position"): vol.All(vol.Coerce(int), vol.Range(min=0, max=3)),
+    vol.Optional("title_alignment"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+    vol.Optional("message_alignment"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
+    vol.Optional("animation_type"): vol.In(["none", "fade", "slide", "scale"]),
+    vol.Optional("animation_duration"): vol.Coerce(int),
+    vol.Optional("animation_exit"): cv.boolean,
 }
 
 
