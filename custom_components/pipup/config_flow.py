@@ -24,12 +24,14 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
         """Initialise discovery state."""
         self._host: str | None = None
         self._port: int = DEFAULT_PORT
+        self._name: str | None = None
 
-    async def _async_validate(self, host: str, port: int, token: str | None) -> None:
-        """Confirm the host is reachable and is actually a PiPup server."""
+    async def _async_status(
+        self, host: str, port: int, token: str | None
+    ) -> dict[str, Any]:
+        """Return /status, proving the host is reachable and really is PiPup."""
         client = PipupClient(async_get_clientsession(self.hass), host, port, token)
-        # /status needs no auth and returns the PiPup version, proving reachability.
-        await client.async_status()
+        return await client.async_status()
 
     async def async_step_user(
         self, user_input: dict[str, Any] | None = None
@@ -40,14 +42,16 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
             host = user_input[CONF_HOST]
             port = user_input[CONF_PORT]
             token = user_input.get(CONF_TOKEN) or None
-
-            await self.async_set_unique_id(f"{host}:{port}")
-            self._abort_if_unique_id_configured()
             try:
-                await self._async_validate(host, port, token)
+                status = await self._async_status(host, port, token)
             except PipupError:
                 errors["base"] = "cannot_connect"
             else:
+                # Prefer the device's stable id; fall back to host:port.
+                await self.async_set_unique_id(status.get("id") or f"{host}:{port}")
+                self._abort_if_unique_id_configured(
+                    updates={CONF_HOST: host, CONF_PORT: port}
+                )
                 return self.async_create_entry(
                     title=f"PiPup ({host})",
                     data={CONF_HOST: host, CONF_PORT: port, CONF_TOKEN: token},
@@ -68,13 +72,16 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
         """Handle a TV discovered over mDNS (``_pipup._tcp``)."""
         host = discovery_info.host
         port = discovery_info.port or DEFAULT_PORT
+        properties = discovery_info.properties
 
-        await self.async_set_unique_id(f"{host}:{port}")
-        self._abort_if_unique_id_configured(updates={CONF_HOST: host})
+        # The app advertises a stable id and a friendly name as TXT records.
+        await self.async_set_unique_id(properties.get("id") or f"{host}:{port}")
+        self._abort_if_unique_id_configured(updates={CONF_HOST: host, CONF_PORT: port})
 
         self._host = host
         self._port = port
-        self.context["title_placeholders"] = {"name": f"PiPup ({host})"}
+        self._name = properties.get("name") or host
+        self.context["title_placeholders"] = {"name": f"PiPup {self._name}"}
         return await self.async_step_zeroconf_confirm()
 
     async def async_step_zeroconf_confirm(
@@ -86,12 +93,12 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
         if user_input is not None:
             token = user_input.get(CONF_TOKEN) or None
             try:
-                await self._async_validate(self._host, self._port, token)
+                await self._async_status(self._host, self._port, token)
             except PipupError:
                 errors["base"] = "cannot_connect"
             else:
                 return self.async_create_entry(
-                    title=f"PiPup ({self._host})",
+                    title=f"PiPup {self._name}",
                     data={
                         CONF_HOST: self._host,
                         CONF_PORT: self._port,
