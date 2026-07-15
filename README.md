@@ -17,6 +17,11 @@ TVs on your network.
 - 🎨 **Rich `pipup.send` service** — images, **live RTSP/HLS camera streams**, web
   pages, text-to-speech, sound, colors, borders, progress, stacking, **media
   positioning** (top/bottom/left/right + alignment), and **entrance/exit animations**.
+- 🎛️ **Interactive buttons** — add remote-operable buttons to a popup; a press fires a
+  **`pipup_button`** event (carrying the TV's `device_id`) so an automation can react —
+  unlock a door, acknowledge an alert, and so on. No webhook wiring required.
+- ♻️ **Update-in-place** — reuse a popup `id` to refresh it without restarting a live
+  stream; **`urgency`** presets; **`muted`** media; per-popup **button colors**.
 - 🔐 **Token aware** — supply the device's auth token once; it's stored with the entry.
 - 📶 **Connectivity sensor** — a `binary_sensor` per TV showing whether it's reachable,
   with the PiPup version and active-popup count as attributes.
@@ -100,6 +105,54 @@ data:
   duration: 60
 ```
 
+### Buttons
+
+Add up to **three** remote-operable buttons. When you include `buttons`, the integration
+automatically points the popup's callback at Home Assistant, so a press fires a
+**`pipup_button`** event — no webhook to set up. Use `duration: 0` to keep the popup up until
+a button is pressed.
+
+```yaml
+action: pipup.send
+target:
+  entity_id: notify.pipup_living_room
+data:
+  title: "Front door"
+  message: "Someone is at the door"
+  duration: 0
+  buttons:
+    - id: unlock
+      label: "Open the door"
+    - id: ignore
+      label: "Dismiss"
+  button_color: "#1565C0"          # optional; label auto-contrasts
+```
+
+React to the press in an automation. The event data includes `device_id` (which TV),
+`button` (the pressed button's `id`), `label`, and `popup_id`:
+
+```yaml
+automation:
+  - alias: "Unlock the door from the TV popup"
+    triggers:
+      - trigger: event
+        event_type: pipup_button
+        event_data:
+          button: unlock
+    actions:
+      - action: lock.unlock
+        target:
+          entity_id: lock.front_door
+```
+
+> Filter on `device_id` too if several TVs can show the same button, so only the TV you
+> acted on triggers. **OK** activates the focused button; **BACK** dismisses without a press.
+>
+> **Security:** the callback endpoint that produces these events is unauthenticated (the TV
+> can't log in to Home Assistant), so each callback URL carries a per-TV secret and forged
+> requests are rejected. Still, for anything sensitive (locks, garage doors) constrain the
+> automation on `device_id` as well, and keep Home Assistant off the public internet.
+
 ### In an automation
 
 ```yaml
@@ -127,11 +180,18 @@ automation:
 | `notify.pipup_<name>` | Notify target; also the target for the `pipup.send` service. |
 | `binary_sensor.pipup_<name>_connectivity` | On when the TV's PiPup server is reachable. Attributes: `version`, `active`, `count`, `auth_enabled`. |
 
+## Events
+
+| Event | Fired when | Data |
+|---|---|---|
+| `pipup_button` | A popup button is pressed on the TV | `device_id`, `entry_id`, `popup_id`, `button`, `label` |
+| `pipup_callback` | A popup is shown or dismissed | `device_id`, `entry_id`, `popup_id`, `event` (`shown`/`dismissed`) |
+
 ## Status
 
-Early MVP (`0.1.0`). Contributions welcome. See the
-[PiPup app](https://github.com/alex-savin/android-pipup) for the device side and its
-HTTP API reference.
+Contributions welcome. Tracks the [PiPup app](https://github.com/alex-savin/android-pipup)
+`0.3.0` feature set (buttons, update-in-place, urgency, muted media); see the app for the
+device side and its HTTP API reference.
 
 ## License
 
