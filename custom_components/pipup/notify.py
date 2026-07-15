@@ -18,9 +18,17 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.entity_platform import AddConfigEntryEntitiesCallback
+from homeassistant.helpers.network import NoURLAvailableError, get_url
 
 from . import PipupConfigEntry
-from .const import DOMAIN, FIELD_MAP, MANUFACTURER, MODEL
+from .const import (
+    CALLBACK_PATH,
+    DATA_CALLBACK_TOKENS,
+    DOMAIN,
+    FIELD_MAP,
+    MANUFACTURER,
+    MODEL,
+)
 
 SERVICE_SEND = "send"
 
@@ -48,6 +56,16 @@ SEND_SCHEMA = {
     vol.Optional("show_progress"): cv.boolean,
     vol.Optional("replace"): cv.boolean,
     vol.Optional("callback"): cv.string,
+    vol.Optional("id"): cv.string,
+    vol.Optional("urgency"): vol.In(["info", "warning", "critical"]),
+    vol.Optional("muted"): cv.boolean,
+    vol.Optional("buttons"): vol.All(
+        cv.ensure_list,
+        [{vol.Required("id"): cv.string, vol.Required("label"): cv.string}],
+        vol.Length(max=3),
+    ),
+    vol.Optional("button_color"): cv.string,
+    vol.Optional("button_text_color"): cv.string,
     vol.Optional("media_position"): vol.All(vol.Coerce(int), vol.Range(min=0, max=3)),
     vol.Optional("title_alignment"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
     vol.Optional("message_alignment"): vol.All(vol.Coerce(int), vol.Range(min=0, max=2)),
@@ -75,7 +93,11 @@ def build_payload(data: dict[str, Any]) -> dict[str, Any]:
         FIELD_MAP[key]: value for key, value in data.items() if key in FIELD_MAP
     }
 
+    if (buttons := data.get("buttons")) is not None:
+        payload["buttons"] = buttons
+
     width = data.get("media_width")
+    muted = data.get("muted")
     if (uri := data.get("image_uri")) is not None:
         image: dict[str, Any] = {"uri": uri}
         if width is not None:
@@ -85,6 +107,8 @@ def build_payload(data: dict[str, Any]) -> dict[str, Any]:
         video: dict[str, Any] = {"uri": uri}
         if width is not None:
             video["width"] = width
+        if muted is not None:
+            video["muted"] = muted
         payload["media"] = {"video": video}
     elif (uri := data.get("web_uri")) is not None:
         web: dict[str, Any] = {"uri": uri}
@@ -92,6 +116,8 @@ def build_payload(data: dict[str, Any]) -> dict[str, Any]:
             web["width"] = width
         if (height := data.get("web_height")) is not None:
             web["height"] = height
+        if muted is not None:
+            web["muted"] = muted
         payload["media"] = {"web": web}
 
     return payload
@@ -106,6 +132,7 @@ class PipupNotifyEntity(NotifyEntity):
     def __init__(self, entry: PipupConfigEntry) -> None:
         """Initialise the entity."""
         self._client = entry.runtime_data.client
+        self._entry_id = entry.entry_id
         self._attr_unique_id = entry.entry_id
         self._attr_device_info = DeviceInfo(
             identifiers={(DOMAIN, entry.entry_id)},
@@ -124,4 +151,22 @@ class PipupNotifyEntity(NotifyEntity):
 
     async def async_send(self, **kwargs: Any) -> None:
         """Send a rich notification from the ``pipup.send`` service."""
-        await self._client.async_notify(build_payload(kwargs))
+        payload = build_payload(kwargs)
+        # So button presses reach Home Assistant with no manual setup: when a popup has buttons and
+        # the caller didn't set their own callback, point it at our per-TV callback endpoint. The
+        # view then fires a ``pipup_button`` event (see http.py).
+        if payload.get("buttons") and not payload.get("callback"):
+            if (callback_url := self._callback_url()) is not None:
+                payload["callback"] = callback_url
+        await self._client.async_notify(payload)
+
+    def _callback_url(self) -> str | None:
+        """The LAN-reachable, token-carrying callback URL for this TV, or None if unavailable."""
+        token = self.hass.data.get(DATA_CALLBACK_TOKENS, {}).get(self._entry_id)
+        if not token:
+            return None
+        try:
+            base = get_url(self.hass, prefer_external=False, allow_internal=True)
+        except NoURLAvailableError:
+            return None
+        return f"{base}{CALLBACK_PATH}/{self._entry_id}?token={token}"

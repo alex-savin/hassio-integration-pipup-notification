@@ -13,6 +13,10 @@ send:
       selector:
         text:
           multiline: true
+    id:
+      example: doorbell
+      selector:
+        text:
     duration:
       example: 20
       selector:
@@ -64,6 +68,9 @@ send:
           max: 1080
           unit_of_measurement: px
           mode: box
+    muted:
+      selector:
+        boolean:
     background_color:
       example: "#CC000000"
       selector:
@@ -105,6 +112,14 @@ send:
           max: 16
           unit_of_measurement: px
           mode: box
+    urgency:
+      example: warning
+      selector:
+        select:
+          options:
+            - info
+            - warning
+            - critical
     icon_uri:
       selector:
         text:
@@ -115,6 +130,17 @@ send:
       selector:
         boolean:
     callback:
+      selector:
+        text:
+    buttons:
+      example: '[{"id": "unlock", "label": "Open the door"}, {"id": "ignore", "label": "Dismiss"}]'
+      selector:
+        object:
+    button_color:
+      example: "#1565C0"
+      selector:
+        text:
+    button_text_color:
       selector:
         text:
     media_position:
