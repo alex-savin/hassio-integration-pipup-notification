@@ -6,7 +6,7 @@ from typing import Any
 
 import voluptuous as vol
 
-from homeassistant.config_entries import ConfigFlow, ConfigFlowResult
+from homeassistant.config_entries import ConfigEntry, ConfigFlow, ConfigFlowResult
 from homeassistant.const import CONF_HOST, CONF_PORT, CONF_TOKEN
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.service_info.zeroconf import ZeroconfServiceInfo
@@ -25,6 +25,41 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
         self._host: str | None = None
         self._port: int = DEFAULT_PORT
         self._name: str | None = None
+
+    def _entry_at(self, host: str, port: int) -> ConfigEntry | None:
+        """Return an already-configured entry for this address, if there is one.
+
+        Fallback for when the device id we were given does not match any entry. A reinstalled
+        app can report an id we have never seen (older builds kept it only in SharedPreferences,
+        which an uninstall wipes; it also legitimately changes on a factory reset or a switch
+        between differently-signed builds). Without this, that TV looks like a brand-new device
+        and gets a second config entry — duplicate device, duplicate entities, dead automations.
+
+        Matching on address is only consulted after the id lookup misses, so two TVs cannot be
+        conflated while both are advertising ids we know.
+        """
+        for entry in self._async_current_entries(include_ignore=False):
+            if entry.data.get(CONF_HOST) == host and entry.data.get(CONF_PORT) == port:
+                return entry
+        return None
+
+    def _adopt_existing(
+        self, device_id: str | None, host: str, port: int
+    ) -> ConfigFlowResult | None:
+        """Re-point an existing entry at a TV whose id changed, instead of duplicating it.
+
+        Returns an abort result when the TV was adopted, or None when it is genuinely new.
+        """
+        entry = self._entry_at(host, port)
+        if entry is None:
+            return None
+
+        if device_id and entry.unique_id != device_id:
+            # Same address, new identity: adopt it so the device, its entities and every
+            # automation referencing them survive the app reinstall.
+            self.hass.config_entries.async_update_entry(entry, unique_id=device_id)
+
+        return self.async_abort(reason="already_configured")
 
     async def _async_status(
         self, host: str, port: int, token: str | None
@@ -48,10 +83,13 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
                 errors["base"] = "cannot_connect"
             else:
                 # Prefer the device's stable id; fall back to host:port.
-                await self.async_set_unique_id(status.get("id") or f"{host}:{port}")
+                device_id = status.get("id")
+                await self.async_set_unique_id(device_id or f"{host}:{port}")
                 self._abort_if_unique_id_configured(
                     updates={CONF_HOST: host, CONF_PORT: port}
                 )
+                if adopted := self._adopt_existing(device_id, host, port):
+                    return adopted
                 return self.async_create_entry(
                     title=f"PiPup ({host})",
                     data={CONF_HOST: host, CONF_PORT: port, CONF_TOKEN: token},
@@ -75,8 +113,14 @@ class PipupConfigFlow(ConfigFlow, domain=DOMAIN):
         properties = discovery_info.properties
 
         # The app advertises a stable id and a friendly name as TXT records.
-        await self.async_set_unique_id(properties.get("id") or f"{host}:{port}")
+        device_id = properties.get("id")
+        await self.async_set_unique_id(device_id or f"{host}:{port}")
         self._abort_if_unique_id_configured(updates={CONF_HOST: host, CONF_PORT: port})
+
+        # An app reinstall can re-announce the same TV under a new id. Adopt the existing entry
+        # rather than offering it to the user as a newly discovered device.
+        if adopted := self._adopt_existing(device_id, host, port):
+            return adopted
 
         self._host = host
         self._port = port
