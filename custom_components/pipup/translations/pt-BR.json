@@ -1,0 +1,232 @@
+{
+  "config": {
+    "flow_title": "{name}",
+    "step": {
+      "user": {
+        "title": "Adicionar uma TV PiPup",
+        "description": "Informe o endereço da Android TV que está executando o PiPup. O token só é necessário se a autenticação estiver ativada no dispositivo.",
+        "data": {
+          "host": "Host",
+          "port": "Porta",
+          "token": "Token (opcional)"
+        }
+      },
+      "zeroconf_confirm": {
+        "title": "Adicionar uma TV PiPup",
+        "description": "Uma TV com PiPup foi encontrada em {host}. Deseja adicioná-la ao Home Assistant? Informe um token somente se a autenticação estiver ativada no dispositivo.",
+        "data": {
+          "token": "Token (opcional)"
+        }
+      }
+    },
+    "error": {
+      "cannot_connect": "Não foi possível acessar o PiPup nesse endereço."
+    },
+    "abort": {
+      "already_configured": "Esta TV PiPup já está configurada."
+    }
+  },
+  "entity": {
+    "binary_sensor": {
+      "connectivity": {
+        "name": "Conectividade"
+      }
+    }
+  },
+  "services": {
+    "send": {
+      "name": "Enviar notificação",
+      "description": "Exibe uma notificação pop-up avançada em uma TV com PiPup.",
+      "fields": {
+        "title": {
+          "name": "Título",
+          "description": "Texto do título (oculto quando vazio)."
+        },
+        "message": {
+          "name": "Mensagem",
+          "description": "Texto da mensagem (oculto quando vazio)."
+        },
+        "id": {
+          "name": "ID",
+          "description": "ID estável do pop-up. Enviar novamente usando o mesmo ID atualiza o pop-up no local, mantendo uma transmissão ao vivo em reprodução. Também é usado como destino para o cancelamento."
+        },
+        "duration": {
+          "name": "Duração",
+          "description": "Quantidade de segundos antes que a notificação seja fechada automaticamente."
+        },
+        "position": {
+          "name": "Posição",
+          "description": "Define onde a notificação aparecerá na tela."
+        },
+        "tts": {
+          "name": "Texto para fala",
+          "description": "Texto que será reproduzido em voz alta na TV."
+        },
+        "sound": {
+          "name": "Som",
+          "description": "URI do som que será reproduzido."
+        },
+        "image_uri": {
+          "name": "URL da imagem",
+          "description": "Imagem a ser exibida (URL ou URI de dados em base64). GIFs animados são reproduzidos normalmente."
+        },
+        "video_uri": {
+          "name": "URL do vídeo / transmissão",
+          "description": "Arquivo de vídeo ou transmissão HLS/RTSP ao vivo a ser reproduzido."
+        },
+        "web_uri": {
+          "name": "URL da página da web",
+          "description": "Página da web a ser incorporada."
+        },
+        "media_width": {
+          "name": "Largura da mídia",
+          "description": "Largura da mídia em pixels."
+        },
+        "web_height": {
+          "name": "Altura da página da web",
+          "description": "Altura da página da web incorporada em pixels."
+        },
+        "background_color": {
+          "name": "Cor de fundo",
+          "description": "Cor de fundo do cartão, no formato [AA]RRGGBB."
+        },
+        "title_color": {
+          "name": "Cor do título",
+          "description": "Cor do título, no formato [AA]RRGGBB."
+        },
+        "title_size": {
+          "name": "Tamanho do título",
+          "description": "Tamanho do texto do título."
+        },
+        "message_color": {
+          "name": "Cor da mensagem",
+          "description": "Cor do texto da mensagem, no formato [AA]RRGGBB."
+        },
+        "message_size": {
+          "name": "Tamanho da mensagem",
+          "description": "Tamanho do texto da mensagem."
+        },
+        "corner_radius": {
+          "name": "Arredondamento dos cantos",
+          "description": "Arredondamento dos cantos do cartão em pixels."
+        },
+        "border_color": {
+          "name": "Cor da borda",
+          "description": "Cor da borda, no formato [AA]RRGGBB."
+        },
+        "border_width": {
+          "name": "Espessura da borda",
+          "description": "Espessura da borda em pixels (requer uma cor de borda)."
+        },
+        "urgency": {
+          "name": "Urgência",
+          "description": "info / warning / critical, com predefinições de borda azul, laranja ou vermelha."
+        },
+        "muted": {
+          "name": "Sem áudio",
+          "description": "Reproduz vídeos ou mídias da web sem áudio, evitando que o pop-up assuma o controle do áudio."
+        },
+        "buttons": {
+          "name": "Botões",
+          "description": "Até 3 botões controláveis pelo controle remoto, cada um com um ID e um rótulo. Pressionar um botão dispara o evento pipup_button e fecha o pop-up."
+        },
+        "button_color": {
+          "name": "Cor dos botões",
+          "description": "Cor de fundo dos botões, no formato [AA]RRGGBB."
+        },
+        "button_text_color": {
+          "name": "Cor do texto dos botões",
+          "description": "Cor do texto dos botões, no formato [AA]RRGGBB. O contraste é ajustado automaticamente quando não informado."
+        },
+        "icon_uri": {
+          "name": "URI do ícone",
+          "description": "Ícone pequeno exibido antes do conteúdo (URL ou URI de dados em base64)."
+        },
+        "show_progress": {
+          "name": "Exibir barra de progresso",
+          "description": "Exibe uma barra de contagem regressiva que diminui durante a duração da notificação."
+        },
+        "replace": {
+          "name": "Substituir",
+          "description": "Limpa os outros pop-ups antes de exibir este, em vez de empilhá-los."
+        },
+        "callback": {
+          "name": "URL de retorno",
+          "description": "URL que recebe as requisições POST de exibição, fechamento e acionamento de botões. Deixe vazio ao usar botões. O Home Assistant configura isso automaticamente e dispara o evento pipup_button."
+        },
+        "media_position": {
+          "name": "Posição da mídia",
+          "description": "Define a posição da mídia em relação ao texto: superior, inferior, esquerda ou direita."
+        },
+        "title_alignment": {
+          "name": "Alinhamento do título",
+          "description": "Alinha o título à esquerda, ao centro ou à direita."
+        },
+        "message_alignment": {
+          "name": "Alinhamento da mensagem",
+          "description": "Alinha a mensagem à esquerda, ao centro ou à direita."
+        },
+        "animation_type": {
+          "name": "Animação",
+          "description": "Animação de entrada e saída: nenhuma, desaparecer, deslizar ou ampliar."
+        },
+        "animation_duration": {
+          "name": "Duração da animação",
+          "description": "Duração da animação em milissegundos."
+        },
+        "animation_exit": {
+          "name": "Animar ao fechar",
+          "description": "Também executa a animação quando a notificação é fechada."
+        }
+      }
+    }
+  },
+  "selector": {
+    "position": {
+      "options": {
+        "0": "Superior direito",
+        "1": "Superior esquerdo",
+        "2": "Inferior direito",
+        "3": "Inferior esquerdo",
+        "4": "Centro"
+      }
+    },
+    "urgency": {
+      "options": {
+        "info": "Informação",
+        "warning": "Aviso",
+        "critical": "Crítico"
+      }
+    },
+    "media_position": {
+      "options": {
+        "0": "Superior (acima do texto)",
+        "1": "Inferior (abaixo do texto)",
+        "2": "À esquerda do texto",
+        "3": "À direita do texto"
+      }
+    },
+    "title_alignment": {
+      "options": {
+        "0": "Esquerda",
+        "1": "Centro",
+        "2": "Direita"
+      }
+    },
+    "message_alignment": {
+      "options": {
+        "0": "Esquerda",
+        "1": "Centro",
+        "2": "Direita"
+      }
+    },
+    "animation_type": {
+      "options": {
+        "none": "Nenhuma",
+        "fade": "Esmaecer",
+        "slide": "Deslizar",
+        "scale": "Ampliar"
+      }
+    }
+  }
+}
