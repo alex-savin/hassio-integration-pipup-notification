@@ -67,7 +67,19 @@ class PipupCallbackView(HomeAssistantView):
         if not isinstance(data, dict):
             return self.json_message("expected a json object", HTTPStatus.BAD_REQUEST)
 
-        device = dr.async_get(hass).async_get_device(identifiers={(DOMAIN, entry_id)})
+        # Look the device up through its own config entry. `async_get_device(identifiers=...)` is
+        # deprecated (identifiers are no longer unique across config entries; it stops working in
+        # HA 2027.8), and its replacement `async_get_device_by_identifier` doesn't exist on the
+        # older HA releases this integration still supports.
+        identifier = (DOMAIN, entry_id)
+        device = next(
+            (
+                device
+                for device in dr.async_entries_for_config_entry(dr.async_get(hass), entry_id)
+                if identifier in device.identifiers
+            ),
+            None,
+        )
         base = {
             "entry_id": entry_id,
             "device_id": device.id if device else None,
