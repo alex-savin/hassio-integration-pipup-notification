@@ -75,5 +75,13 @@
         "animation_exit": { "name": "Animate on exit", "description": "Also play the animation when the notification is dismissed." }
       }
     }
+  },
+  "selector": {
+    "position": { "options": { "0": "Top right", "1": "Top left", "2": "Bottom right", "3": "Bottom left", "4": "Center" } },
+    "urgency": { "options": { "info": "Info", "warning": "Warning", "critical": "Critical" } },
+    "media_position": { "options": { "0": "Top (above text)", "1": "Bottom (below text)", "2": "Left of text", "3": "Right of text" } },
+    "title_alignment": { "options": { "0": "Left", "1": "Center", "2": "Right" } },
+    "message_alignment": { "options": { "0": "Left", "1": "Center", "2": "Right" } },
+    "animation_type": { "options": { "none": "None", "fade": "Fade", "slide": "Slide", "scale": "Scale" } }
   }
 }

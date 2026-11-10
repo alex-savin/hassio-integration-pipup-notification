@@ -29,12 +29,13 @@ send:
       example: 0
       selector:
         select:
+          translation_key: position
           options:
-            - { value: "0", label: "Top right" }
-            - { value: "1", label: "Top left" }
-            - { value: "2", label: "Bottom right" }
-            - { value: "3", label: "Bottom left" }
-            - { value: "4", label: "Center" }
+            - "0"
+            - "1"
+            - "2"
+            - "3"
+            - "4"
     tts:
       example: "Someone is at the front door"
       selector:
@@ -116,6 +117,7 @@ send:
       example: warning
       selector:
         select:
+          translation_key: urgency
           options:
             - info
             - warning
@@ -147,29 +149,33 @@ send:
       example: 0
       selector:
         select:
+          translation_key: media_position
           options:
-            - { value: "0", label: "Top (above text)" }
-            - { value: "1", label: "Bottom (below text)" }
-            - { value: "2", label: "Left of text" }
-            - { value: "3", label: "Right of text" }
+            - "0"
+            - "1"
+            - "2"
+            - "3"
     title_alignment:
       selector:
         select:
+          translation_key: title_alignment
           options:
-            - { value: "0", label: "Left" }
-            - { value: "1", label: "Center" }
-            - { value: "2", label: "Right" }
+            - "0"
+            - "1"
+            - "2"
     message_alignment:
       selector:
         select:
+          translation_key: message_alignment
           options:
-            - { value: "0", label: "Left" }
-            - { value: "1", label: "Center" }
-            - { value: "2", label: "Right" }
+            - "0"
+            - "1"
+            - "2"
     animation_type:
       example: fade
       selector:
         select:
+          translation_key: animation_type
           options:
             - none
             - fade

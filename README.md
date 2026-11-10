@@ -25,10 +25,11 @@ TVs on your network.
 - 🔐 **Token aware** — supply the device's auth token once; it's stored with the entry.
 - 📶 **Connectivity sensor** — a `binary_sensor` per TV showing whether it's reachable,
   with the PiPup version and active-popup count as attributes.
+- 🌐 **Translated** — English and Brazilian Portuguese (pt-BR).
 
 ## Requirements
 
-- Home Assistant **2024.11** or newer.
+- Home Assistant **2025.2** or newer.
 - The **PiPup** app running on one or more Android TVs on the same network.
 
 ## Installation
@@ -104,6 +105,13 @@ data:
   media_width: 640
   duration: 60
 ```
+
+> **Credentials in the URL** (`user:pass@host`) currently work for **RTSP** streams only.
+> The app doesn't yet send HTTP Basic auth for `http(s)://` media, so a protected HTTP
+> stream (e.g. go2rtc's `/api/stream.mp4`) plays as a black box. Until it does, expose
+> the stream without auth to the TV only — for example behind a reverse proxy that allows
+> the TV's IP and requires credentials from everyone else (see
+> [#6](https://github.com/alex-savin/hassio-integration-pipup-notification/issues/6)).
 
 ### Buttons
 
