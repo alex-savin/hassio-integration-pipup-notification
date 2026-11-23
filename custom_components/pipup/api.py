@@ -4,9 +4,10 @@ from __future__ import annotations
 
 import asyncio
 import json
+import secrets
 from typing import Any
 
-from aiohttp import ClientError, ClientSession, FormData
+from aiohttp import ClientError, ClientSession
 
 from .const import DEFAULT_TIMEOUT
 
@@ -25,6 +26,28 @@ class PipupAuthError(PipupError):
 
 class PipupNotSupportedError(PipupError):
     """Raised when the app on the TV is too old for a request (HTTP 404 on a newer endpoint)."""
+
+
+def encode_multipart(
+    fields: dict[str, str], image: bytes, content_type: str
+) -> tuple[bytes, str]:
+    """A multipart/form-data body with plain text fields and one ``image`` file part.
+
+    Built by hand because aiohttp's FormData gives every text field a ``Content-Type: text/plain``
+    header, and the app's HTTP server (NanoHTTPD 2.3.1) stores any part that has a Content-Type as an
+    uploaded file, so those fields never reached the popup.
+    """
+    boundary = f"pipup-{secrets.token_hex(12)}"
+    out = bytearray()
+    for name, value in fields.items():
+        out += f'--{boundary}\r\nContent-Disposition: form-data; name="{name}"\r\n\r\n'.encode()
+        out += value.encode() + b"\r\n"
+    out += (
+        f'--{boundary}\r\nContent-Disposition: form-data; name="image"; filename="snapshot.jpg"\r\n'
+        f"Content-Type: {content_type}\r\n\r\n"
+    ).encode()
+    out += image + f"\r\n--{boundary}--\r\n".encode()
+    return bytes(out), boundary
 
 
 class PipupClient:
@@ -76,15 +99,22 @@ class PipupClient:
 
         Only scalar fields travel over multipart; nested ones (media, buttons) are JSON-only.
         """
-        form = FormData()
-        for key, value in fields.items():
-            if isinstance(value, (dict, list)) or value is None:
-                continue
-            form.add_field(key, str(value).lower() if isinstance(value, bool) else str(value))
+        text = {
+            key: str(value).lower() if isinstance(value, bool) else str(value)
+            for key, value in fields.items()
+            if value is not None and not isinstance(value, (dict, list))
+        }
         if width is not None:
-            form.add_field("imageWidth", str(width))
-        form.add_field("image", image, filename="snapshot.jpg", content_type=content_type)
-        return await self._request("POST", "/notify", data=form, auth=True, as_json=True)
+            text["imageWidth"] = str(width)
+        body, boundary = encode_multipart(text, image, content_type)
+        return await self._request(
+            "POST",
+            "/notify",
+            data=body,
+            headers={"Content-Type": f"multipart/form-data; boundary={boundary}"},
+            auth=True,
+            as_json=True,
+        )
 
     async def async_cancel(self, popup_id: str | None = None) -> None:
         """Dismiss one popup by id, or every popup on screen."""
@@ -125,13 +155,14 @@ class PipupClient:
         *,
         json_body: dict[str, Any] | None = None,
         data: Any = None,
+        headers: dict[str, str] | None = None,
         params: dict[str, str] | None = None,
         auth: bool = True,
         as_json: bool = False,
         newer_endpoint: bool = False,
     ) -> Any:
         url = f"{self.base_url}{path}"
-        headers = self._auth_headers() if auth else {}
+        headers = {**(headers or {}), **(self._auth_headers() if auth else {})}
         try:
             async with asyncio.timeout(DEFAULT_TIMEOUT):
                 response = await self._session.request(

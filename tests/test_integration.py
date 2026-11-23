@@ -274,13 +274,16 @@ async def test_send_camera_snapshot_uploads_the_image(
             },
             blocking=True,
         )
-    form = _calls(tv, "POST", "/notify")[-1][2]
-    # Multipart: a FormData, not JSON; buttons and callback are dropped.
-    fields = {f[0]["name"]: f[2] for f in form._fields}
-    assert fields["title"] == "Door"
-    assert fields["imageWidth"] == "400"
-    assert fields["image"] == b"\xff\xd8jpeg"
-    assert "buttons" not in fields and "callback" not in fields
+    call = _calls(tv, "POST", "/notify")[-1]
+    body, headers = call[2], call[3]
+    assert headers["Content-Type"].startswith("multipart/form-data; boundary=")
+    # Text fields carry no Content-Type (the app's server would take them for files); the image does.
+    assert b'name="title"\r\n\r\nDoor\r\n' in body
+    assert b'name="imageWidth"\r\n\r\n400\r\n' in body
+    assert b'filename="snapshot.jpg"\r\nContent-Type: image/jpeg\r\n\r\n\xff\xd8jpeg' in body
+    assert b"text/plain" not in body
+    # Buttons and callback cannot travel over multipart: dropped.
+    assert b'name="buttons"' not in body and b'name="callback"' not in body
 
 
 async def test_dismiss_and_buttons(
