@@ -116,9 +116,11 @@ for a sticky one (`duration: 0`).
 
 ### The fastest camera view: WebRTC (WHEP)
 
-If you run [go2rtc](https://github.com/AlexxIT/go2rtc) (the Home Assistant add-on, or
-the one built into Home Assistant on port 1984), its WHEP endpoint is usually well under
-a second behind the camera:
+If you run [go2rtc](https://github.com/AlexxIT/go2rtc) where the TV can reach it (the
+go2rtc add-on, or a standalone install; Home Assistant's built-in copy only listens on
+localhost by default), its WHEP endpoint is usually well under a second behind the
+camera. Setting `webrtc: ice_servers: []` in go2rtc's config can cut the time to the
+first frame by several seconds on a LAN:
 
 ```yaml
 action: pipup.send
