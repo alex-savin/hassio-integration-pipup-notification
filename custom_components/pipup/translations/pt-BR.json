@@ -30,6 +30,41 @@
     "binary_sensor": {
       "connectivity": {
         "name": "Conectividade"
+      },
+      "screen": {
+        "name": "Tela",
+        "state_attributes": {
+          "screensaver": {
+            "name": "Protetor de tela"
+          }
+        }
+      },
+      "popup": {
+        "name": "Pop-up na tela",
+        "state_attributes": {
+          "popup_ids": {
+            "name": "IDs dos pop-ups"
+          }
+        }
+      },
+      "overlay_permission": {
+        "name": "Permissão de sobreposição"
+      }
+    },
+    "sensor": {
+      "popups": {
+        "name": "Pop-ups na tela"
+      },
+      "last_popup": {
+        "name": "Último pop-up"
+      }
+    },
+    "button": {
+      "wake": {
+        "name": "Ligar a tela"
+      },
+      "dismiss": {
+        "name": "Fechar pop-ups"
       }
     }
   },
@@ -52,11 +87,11 @@
         },
         "duration": {
           "name": "Duração",
-          "description": "Quantidade de segundos antes que a notificação seja fechada automaticamente."
+          "description": "Segundos até a notificação fechar sozinha. 0 a mantém na tela até ser fechada."
         },
         "position": {
           "name": "Posição",
-          "description": "Define onde a notificação aparecerá na tela."
+          "description": "Define onde a notificação aparecerá na tela. As posições 5–8 exigem o PiPup 0.4.0 ou mais recente."
         },
         "tts": {
           "name": "Texto para fala",
@@ -64,7 +99,7 @@
         },
         "sound": {
           "name": "Som",
-          "description": "URI do som que será reproduzido."
+          "description": "\"default\" para o som embutido, ou a URL de um som para tocar uma vez."
         },
         "image_uri": {
           "name": "URL da imagem",
@@ -83,8 +118,8 @@
           "description": "Largura da mídia em pixels."
         },
         "web_height": {
-          "name": "Altura da página da web",
-          "description": "Altura da página da web incorporada em pixels."
+          "name": "Altura da página web",
+          "description": "Nome antigo de Altura da mídia; ainda funciona para páginas web."
         },
         "background_color": {
           "name": "Cor de fundo",
@@ -177,6 +212,80 @@
         "animation_exit": {
           "name": "Animar ao fechar",
           "description": "Também executa a animação quando a notificação é fechada."
+        },
+        "fullscreen": {
+          "name": "Tela cheia",
+          "description": "Preenche a tela com o pop-up (mídia ajustada à tela). Exige o PiPup 0.5.0."
+        },
+        "opacity": {
+          "name": "Opacidade",
+          "description": "Opacidade do pop-up, de 0 a 1, para a TV aparecer por trás."
+        },
+        "camera_entity": {
+          "name": "Câmera",
+          "description": "Uma câmera do Home Assistant. O Home Assistant entrega à TV um link assinado para o seu próprio proxy de câmera (ou stream HLS, ou um instantâneo enviado), então a TV nunca precisa do endereço ou da senha da câmera. Um instantâneo serve de pôster enquanto a imagem ao vivo começa."
+        },
+        "camera_mode": {
+          "name": "Modo da câmera",
+          "description": "mjpeg (padrão): MJPEG ao vivo pelo proxy de câmera do Home Assistant. stream: HLS pela integração stream (precisa estar configurada; alguns segundos de atraso). snapshot: uma imagem enviada à TV (sem botões)."
+        },
+        "whep_uri": {
+          "name": "URL WHEP",
+          "description": "Stream WebRTC de um endpoint WHEP, como /api/webrtc?src=<stream> do go2rtc; bem menos de um segundo de atraso. Exige o PiPup 0.4.0."
+        },
+        "grid": {
+          "name": "Grade de câmeras",
+          "description": "Até 9 streams WHEP em grade: uma lista de URLs ou de {uri, label, poster}. Todas devem vir do mesmo go2rtc. Exige o PiPup 0.5.0."
+        },
+        "poster_uri": {
+          "name": "URL do pôster",
+          "description": "Imagem mostrada enquanto o vídeo, a página ou o stream WHEP começa; some no primeiro quadro."
+        },
+        "poster_mode": {
+          "name": "Modo do pôster",
+          "description": "Como o pôster preenche a área da mídia: fit, fill, stretch ou center. Com um modo definido, a área mantém o tamanho pedido em vez de seguir o formato do pôster. Exige o PiPup 0.5.0."
+        },
+        "media_height": {
+          "name": "Altura da mídia",
+          "description": "Altura da página web, do stream WHEP ou da grade, em pixels."
+        },
+        "buffer_ms": {
+          "name": "Buffer",
+          "description": "Buffer de vídeo em milissegundos. 150–300 reduz o atraso do RTSP para cerca de 1–2 s; aumente se o vídeo travar. Exige o PiPup 0.5.0."
+        },
+        "decoder": {
+          "name": "Decodificador de vídeo",
+          "description": "auto, hardware ou software. Software ajuda TVs cujo decodificador de hardware está ocupado com a TV ao vivo. Exige o PiPup 0.5.0."
+        },
+        "grid_columns": {
+          "name": "Colunas da grade",
+          "description": "Número de colunas da grade (padrão: 2 até 4 câmeras, senão 3)."
+        },
+        "grid_labels": {
+          "name": "Rótulos da grade",
+          "description": "Mostra o rótulo de cada câmera na grade."
+        },
+        "tts_language": {
+          "name": "Idioma da fala",
+          "description": "Idioma BCP-47 do texto falado, por exemplo pt-BR. Usa o idioma da TV se faltar."
+        },
+        "sound_volume": {
+          "name": "Volume do som",
+          "description": "Volume do som, de 0 a 1. O que a TV está tocando abaixa por um instante."
+        },
+        "dismiss_screensaver": {
+          "name": "Encerrar protetor de tela",
+          "description": "Encerra o protetor de tela da TV antes de mostrar o pop-up (ligado por padrão)."
+        }
+      }
+    },
+    "dismiss": {
+      "name": "Fechar notificação",
+      "description": "Fecha um pop-up numa TV com PiPup, ou todos eles.",
+      "fields": {
+        "id": {
+          "name": "ID",
+          "description": "ID do pop-up a fechar. Deixe vazio para fechar todos."
         }
       }
     }
@@ -188,7 +297,11 @@
         "1": "Superior esquerdo",
         "2": "Inferior direito",
         "3": "Inferior esquerdo",
-        "4": "Centro"
+        "4": "Centro",
+        "5": "Superior central",
+        "6": "Inferior central",
+        "7": "Centro à esquerda",
+        "8": "Centro à direita"
       }
     },
     "urgency": {
@@ -227,6 +340,34 @@
         "slide": "Deslizar",
         "scale": "Ampliar"
       }
+    },
+    "camera_mode": {
+      "options": {
+        "mjpeg": "Ao vivo (MJPEG)",
+        "stream": "Ao vivo (stream HLS)",
+        "snapshot": "Instantâneo"
+      }
+    },
+    "poster_mode": {
+      "options": {
+        "fit": "Ajustar",
+        "fill": "Preencher",
+        "stretch": "Esticar",
+        "center": "Centralizar"
+      }
+    },
+    "decoder": {
+      "options": {
+        "auto": "Automático",
+        "hardware": "Hardware",
+        "software": "Software"
+      }
+    }
+  },
+  "issues": {
+    "overlay_permission": {
+      "title": "O PiPup em {name} não consegue mostrar pop-ups",
+      "description": "O PiPup em **{name}** não tem permissão para sobrepor outros apps, então nenhum pop-up pode aparecer. Conceda a permissão na TV (Configurações > Apps > PiPup > Sobrepor a outros apps) ou, de um computador com adb:\n\n`{command}`\n\nEste aviso some sozinho quando a TV informar a permissão."
     }
   }
 }

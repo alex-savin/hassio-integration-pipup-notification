@@ -3,9 +3,10 @@
 from __future__ import annotations
 
 import asyncio
+import json
 from typing import Any
 
-from aiohttp import ClientError, ClientSession
+from aiohttp import ClientError, ClientSession, FormData
 
 from .const import DEFAULT_TIMEOUT
 
@@ -20,6 +21,10 @@ class PipupConnectionError(PipupError):
 
 class PipupAuthError(PipupError):
     """Raised when authentication fails (HTTP 401)."""
+
+
+class PipupNotSupportedError(PipupError):
+    """Raised when the app on the TV is too old for a request (HTTP 404 on a newer endpoint)."""
 
 
 class PipupClient:
@@ -54,13 +59,64 @@ class PipupClient:
         """Return the JSON status snapshot (version, active, count, authEnabled...)."""
         return await self._request("GET", "/status", auth=False, as_json=True)
 
-    async def async_notify(self, payload: dict[str, Any]) -> None:
-        """Show a notification on the TV."""
-        await self._request("POST", "/notify", json_body=payload, auth=True)
+    async def async_notify(self, payload: dict[str, Any]) -> dict[str, Any]:
+        """Show a notification on the TV; returns the app's answer (``{"status", "id"}``)."""
+        return await self._request(
+            "POST", "/notify", json_body=payload, auth=True, as_json=True
+        )
 
-    async def async_cancel(self) -> None:
-        """Dismiss all on-screen notifications."""
-        await self._request("POST", "/cancel", auth=True)
+    async def async_notify_image(
+        self,
+        fields: dict[str, Any],
+        image: bytes,
+        content_type: str = "image/jpeg",
+        width: int | None = None,
+    ) -> dict[str, Any]:
+        """Show a notification with an uploaded image (multipart ``/notify``).
+
+        Only scalar fields travel over multipart; nested ones (media, buttons) are JSON-only.
+        """
+        form = FormData()
+        for key, value in fields.items():
+            if isinstance(value, (dict, list)) or value is None:
+                continue
+            form.add_field(key, str(value).lower() if isinstance(value, bool) else str(value))
+        if width is not None:
+            form.add_field("imageWidth", str(width))
+        form.add_field("image", image, filename="snapshot.jpg", content_type=content_type)
+        return await self._request("POST", "/notify", data=form, auth=True, as_json=True)
+
+    async def async_cancel(self, popup_id: str | None = None) -> None:
+        """Dismiss one popup by id, or every popup on screen."""
+        params = {"id": popup_id} if popup_id else None
+        await self._request("POST", "/cancel", params=params, auth=True)
+
+    async def async_power_on(self) -> bool | None:
+        """Turn the screen on (and end a screensaver). App 0.4.0+.
+
+        Returns whether the screen actually came on (app 0.5.0+ reports ``reached``), or None when the
+        app only confirms that it tried (0.4.x answers a plain ``ok``).
+        """
+        answer = await self._request(
+            "POST", "/power", params={"state": "on"}, auth=True, newer_endpoint=True
+        )
+        try:
+            body = json.loads(answer)
+        except ValueError:
+            return None
+        reached = body.get("reached") if isinstance(body, dict) else None
+        return reached if isinstance(reached, bool) else None
+
+    async def async_set_push(self, url: str) -> dict[str, Any]:
+        """Point the app's state pushes at ``url``; an empty string turns pushing off. App 0.4.0+."""
+        return await self._request(
+            "POST",
+            "/push",
+            params={"url": url},
+            auth=True,
+            as_json=True,
+            newer_endpoint=True,
+        )
 
     async def _request(
         self,
@@ -68,25 +124,32 @@ class PipupClient:
         path: str,
         *,
         json_body: dict[str, Any] | None = None,
+        data: Any = None,
+        params: dict[str, str] | None = None,
         auth: bool = True,
         as_json: bool = False,
+        newer_endpoint: bool = False,
     ) -> Any:
         url = f"{self.base_url}{path}"
         headers = self._auth_headers() if auth else {}
         try:
             async with asyncio.timeout(DEFAULT_TIMEOUT):
                 response = await self._session.request(
-                    method, url, json=json_body, headers=headers
+                    method, url, json=json_body, data=data, params=params, headers=headers
                 )
-        except (ClientError, asyncio.TimeoutError) as err:
+                if response.status == 401:
+                    raise PipupAuthError("Authentication failed (check the token)")
+                if response.status == 404 and newer_endpoint:
+                    raise PipupNotSupportedError(
+                        f"{path} is not supported by this PiPup app version"
+                    )
+                if response.status >= 400:
+                    text = await response.text()
+                    raise PipupError(f"HTTP {response.status}: {text.strip()}")
+                if as_json:
+                    return await response.json(content_type=None)
+                return await response.text()
+        except (ClientError, TimeoutError) as err:
             raise PipupConnectionError(f"Could not reach {url}: {err}") from err
-
-        if response.status == 401:
-            raise PipupAuthError("Authentication failed (check the token)")
-        if response.status >= 400:
-            text = await response.text()
-            raise PipupError(f"HTTP {response.status}: {text.strip()}")
-
-        if as_json:
-            return await response.json()
-        return await response.text()
+        except ValueError as err:  # a non-JSON body where JSON was expected
+            raise PipupError(f"Unexpected answer from {url}: {err}") from err
