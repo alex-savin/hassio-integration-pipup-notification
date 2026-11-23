@@ -1,0 +1,173 @@
+blueprint:
+  name: PiPup appliance done
+  description: >-
+    Watch an appliance's power sensor and show a card on your PiPup TVs when it
+    has finished. A helper remembers that the appliance was running, and a
+    periodic check catches a finish that happened while Home Assistant was
+    restarting.
+  domain: automation
+  source_url: https://github.com/alex-savin/hassio-integration-pipup-notification/blob/main/blueprints/automation/pipup_appliance_done.yaml
+  input:
+    power_sensor:
+      name: Power sensor
+      selector:
+        entity:
+          filter:
+            - domain: sensor
+              device_class: power
+    running_helper:
+      name: Running helper
+      description: An input_boolean this automation uses to remember the appliance is running.
+      selector:
+        entity:
+          filter:
+            - domain: input_boolean
+    tvs:
+      name: TVs
+      selector:
+        entity:
+          filter:
+            - integration: pipup
+              domain: notify
+          multiple: true
+    running_watts:
+      name: Running above
+      default: 10
+      selector:
+        number:
+          min: 1
+          max: 5000
+          unit_of_measurement: W
+          mode: box
+    running_minutes:
+      name: Running for at least
+      default: 2
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: min
+          mode: box
+    done_watts:
+      name: Done below
+      default: 5
+      selector:
+        number:
+          min: 0
+          max: 5000
+          unit_of_measurement: W
+          mode: box
+    done_minutes:
+      name: Done after
+      description: Minutes below the done level before it counts as finished.
+      default: 3
+      selector:
+        number:
+          min: 1
+          max: 60
+          unit_of_measurement: min
+          mode: box
+    title:
+      name: Title
+      default: Appliance finished
+      selector:
+        text:
+    message:
+      name: Message
+      default: The washing machine is done.
+      selector:
+        text:
+    icon:
+      name: Icon URL
+      default: ""
+      selector:
+        text:
+    screen_sensors:
+      name: Only when one of these screens is on
+      description: >-
+        Optional: the "Screen" sensors of your PiPup TVs. When set, the card is
+        only shown if at least one of them is on.
+      default: []
+      selector:
+        entity:
+          filter:
+            - integration: pipup
+              domain: binary_sensor
+              device_class: power
+          multiple: true
+
+mode: queued
+max: 5
+
+variables:
+  power_sensor: !input power_sensor
+  running_helper: !input running_helper
+  done_watts: !input done_watts
+  done_minutes: !input done_minutes
+  screen_sensors: !input screen_sensors
+  title: !input title
+  message: !input message
+  icon: !input icon
+
+triggers:
+  - trigger: numeric_state
+    entity_id: !input power_sensor
+    above: !input running_watts
+    for:
+      minutes: !input running_minutes
+    id: running
+  - trigger: numeric_state
+    entity_id: !input power_sensor
+    below: !input done_watts
+    for:
+      minutes: !input done_minutes
+    id: done
+  - trigger: homeassistant
+    event: start
+    id: check
+  - trigger: time_pattern
+    minutes: /5
+    id: check
+
+actions:
+  - choose:
+      - conditions:
+          - condition: trigger
+            id: running
+        sequence:
+          - action: input_boolean.turn_on
+            target:
+              entity_id: !input running_helper
+      - conditions:
+          - condition: state
+            entity_id: !input running_helper
+            state: "on"
+          # The finish condition, recomputed: also right for the restart and periodic checks.
+          - condition: template
+            value_template: >-
+              {{ states(power_sensor) | is_number
+                 and states(power_sensor) | float < done_watts | float
+                 and (now() - states[power_sensor].last_changed).total_seconds()
+                     >= done_minutes | float * 60 }}
+          - condition: template
+            value_template: >-
+              {{ screen_sensors | count == 0
+                 or screen_sensors | select('is_state', 'on') | list | count > 0 }}
+        sequence:
+          - action: input_boolean.turn_off
+            target:
+              entity_id: !input running_helper
+          - action: pipup.send
+            target:
+              entity_id: !input tvs
+            data: >-
+              {% set d = {
+                "id": "appliance_" ~ running_helper.split('.')[1],
+                "title": title,
+                "message": message,
+                "urgency": "info",
+                "show_progress": true,
+                "duration": 60,
+              } %}
+              {% if icon %}{% set d = dict(d, icon_uri=icon) %}{% endif %}
+              {{ d }}
