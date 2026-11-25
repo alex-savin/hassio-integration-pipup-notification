@@ -231,11 +231,11 @@
         },
         "whep_uri": {
           "name": "WHEP URL",
-          "description": "WebRTC stream from a WHEP endpoint such as go2rtc's /api/webrtc?src=<stream>; well under a second behind the camera. Needs PiPup 0.4.0."
+          "description": "WebRTC stream from a WHEP endpoint such as go2rtc's /api/webrtc?src=STREAM; well under a second behind the camera. Needs PiPup 0.4.0."
         },
         "grid": {
           "name": "Camera grid",
-          "description": "Up to 9 WHEP streams shown as a grid: a list of URLs, or of {uri, label, poster}. All must come from the same go2rtc. Needs PiPup 0.5.0."
+          "description": "Up to 9 WHEP streams shown as a grid: a list of URLs, or of items with uri, label and poster. All must come from the same go2rtc. Needs PiPup 0.5.0."
         },
         "poster_uri": {
           "name": "Poster URL",

@@ -231,11 +231,11 @@
         },
         "whep_uri": {
           "name": "URL WHEP",
-          "description": "Stream WebRTC de um endpoint WHEP, como /api/webrtc?src=<stream> do go2rtc; bem menos de um segundo de atraso. Exige o PiPup 0.4.0."
+          "description": "Stream WebRTC de um endpoint WHEP, como /api/webrtc?src=STREAM do go2rtc; bem menos de um segundo de atraso. Exige o PiPup 0.4.0."
         },
         "grid": {
           "name": "Grade de câmeras",
-          "description": "Até 9 streams WHEP em grade: uma lista de URLs ou de {uri, label, poster}. Todas devem vir do mesmo go2rtc. Exige o PiPup 0.5.0."
+          "description": "Até 9 streams WHEP em grade: uma lista de URLs ou de itens com uri, label e poster. Todas devem vir do mesmo go2rtc. Exige o PiPup 0.5.0."
         },
         "poster_uri": {
           "name": "URL do pôster",
