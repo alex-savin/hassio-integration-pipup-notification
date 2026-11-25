@@ -1,0 +1,127 @@
+blueprint:
+  name: PiPup info card
+  description: >-
+    Show a short info card on one or more PiPup TVs. Call the script with a
+    title and message from any automation. Give a card_id to update the same
+    card in place instead of stacking a new one.
+  domain: script
+  source_url: https://github.com/alex-savin/hassio-integration-pipup-notification/blob/main/blueprints/script/pipup_info_card.yaml
+  input:
+    tvs:
+      name: TVs
+      selector:
+        entity:
+          filter:
+            - integration: pipup
+              domain: notify
+          multiple: true
+    position:
+      name: Position
+      default: "0"
+      selector:
+        select:
+          options:
+            - label: Top right
+              value: "0"
+            - label: Top left
+              value: "1"
+            - label: Bottom right
+              value: "2"
+            - label: Bottom left
+              value: "3"
+            - label: Center
+              value: "4"
+            - label: Top center (PiPup 0.4+)
+              value: "5"
+            - label: Bottom center (PiPup 0.4+)
+              value: "6"
+            - label: Center left (PiPup 0.4+)
+              value: "7"
+            - label: Center right (PiPup 0.4+)
+              value: "8"
+    default_duration:
+      name: Default duration
+      description: Seconds on screen when the call gives none.
+      default: 15
+      selector:
+        number:
+          min: 3
+          max: 600
+          unit_of_measurement: seconds
+          mode: box
+    chime:
+      name: Chime
+      description: Play the built-in chime when a card appears.
+      default: false
+      selector:
+        boolean:
+    show_progress:
+      name: Countdown bar
+      default: true
+      selector:
+        boolean:
+
+mode: queued
+max: 10
+
+fields:
+  title:
+    name: Title
+    selector:
+      text:
+  message:
+    name: Message
+    required: true
+    selector:
+      text:
+        multiline: true
+  icon:
+    name: Icon URL
+    selector:
+      text:
+  urgency:
+    name: Urgency
+    selector:
+      select:
+        options:
+          - info
+          - warning
+          - critical
+  duration:
+    name: Duration
+    selector:
+      number:
+        min: 0
+        max: 86400
+        unit_of_measurement: seconds
+        mode: box
+  card_id:
+    name: Card id
+    description: Re-using an id updates that card in place.
+    selector:
+      text:
+
+variables:
+  position_input: !input position
+  default_duration_input: !input default_duration
+  chime_input: !input chime
+  show_progress_input: !input show_progress
+  card: >-
+    {% set d = {
+      "message": message,
+      "position": position_input | int,
+      "duration": (duration if duration is defined and duration != "" else default_duration_input) | int,
+      "show_progress": show_progress_input,
+    } %}
+    {% if title is defined and title %}{% set d = dict(d, title=title) %}{% endif %}
+    {% if icon is defined and icon %}{% set d = dict(d, icon_uri=icon) %}{% endif %}
+    {% if urgency is defined and urgency %}{% set d = dict(d, urgency=urgency) %}{% endif %}
+    {% if card_id is defined and card_id %}{% set d = dict(d, id=card_id) %}{% endif %}
+    {% if chime_input %}{% set d = dict(d, sound="default") %}{% endif %}
+    {{ d }}
+
+sequence:
+  - action: pipup.send
+    target:
+      entity_id: !input tvs
+    data: "{{ card }}"

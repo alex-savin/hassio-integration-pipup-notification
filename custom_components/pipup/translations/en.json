@@ -30,6 +30,41 @@
     "binary_sensor": {
       "connectivity": {
         "name": "Connectivity"
+      },
+      "screen": {
+        "name": "Screen",
+        "state_attributes": {
+          "screensaver": {
+            "name": "Screensaver"
+          }
+        }
+      },
+      "popup": {
+        "name": "Popup on screen",
+        "state_attributes": {
+          "popup_ids": {
+            "name": "Popup ids"
+          }
+        }
+      },
+      "overlay_permission": {
+        "name": "Overlay permission"
+      }
+    },
+    "sensor": {
+      "popups": {
+        "name": "Popups on screen"
+      },
+      "last_popup": {
+        "name": "Last popup"
+      }
+    },
+    "button": {
+      "wake": {
+        "name": "Wake screen"
+      },
+      "dismiss": {
+        "name": "Dismiss popups"
       }
     }
   },
@@ -38,50 +73,301 @@
       "name": "Send notification",
       "description": "Show a rich pop-up notification on a PiPup TV.",
       "fields": {
-        "title": { "name": "Title", "description": "Title text (hidden if empty)." },
-        "message": { "name": "Message", "description": "Body text (hidden if empty)." },
-        "id": { "name": "ID", "description": "Stable popup id. Re-sending with the same id updates the popup in place (a live stream keeps playing); also what Cancel targets." },
-        "duration": { "name": "Duration", "description": "Seconds before the notification auto-dismisses." },
-        "position": { "name": "Position", "description": "Where on screen the notification appears." },
-        "tts": { "name": "Text-to-speech", "description": "Text to speak aloud on the TV." },
-        "sound": { "name": "Sound", "description": "URI of a sound to play." },
-        "image_uri": { "name": "Image URL", "description": "Image to show (URL or base64 data URI). Animated GIFs animate." },
-        "video_uri": { "name": "Video / stream URL", "description": "Video file or live HLS/RTSP stream to play." },
-        "web_uri": { "name": "Web page URL", "description": "Web page to embed." },
-        "media_width": { "name": "Media width", "description": "Width of the media in pixels." },
-        "web_height": { "name": "Web height", "description": "Height of an embedded web page in pixels." },
-        "background_color": { "name": "Background color", "description": "Card background, [AA]RRGGBB." },
-        "title_color": { "name": "Title color", "description": "Title color, [AA]RRGGBB." },
-        "title_size": { "name": "Title size", "description": "Title text size." },
-        "message_color": { "name": "Message color", "description": "Body color, [AA]RRGGBB." },
-        "message_size": { "name": "Message size", "description": "Body text size." },
-        "corner_radius": { "name": "Corner radius", "description": "Rounds the card corners (px)." },
-        "border_color": { "name": "Border color", "description": "Border color, [AA]RRGGBB." },
-        "border_width": { "name": "Border width", "description": "Border thickness in px (requires a border color)." },
-        "urgency": { "name": "Urgency", "description": "info / warning / critical — a blue / orange / red border preset." },
-        "muted": { "name": "Muted", "description": "Play video/web media without audio, so the popup never grabs audio focus." },
-        "buttons": { "name": "Buttons", "description": "Up to 3 remote-operable buttons, each with an id and a label. Pressing one fires a pipup_button event and dismisses the popup." },
-        "button_color": { "name": "Button color", "description": "Button background color, [AA]RRGGBB." },
-        "button_text_color": { "name": "Button text color", "description": "Button label color, [AA]RRGGBB; auto-contrasts when omitted." },
-        "icon_uri": { "name": "Icon URI", "description": "Small leading icon (URL or base64 data URI)." },
-        "show_progress": { "name": "Show progress bar", "description": "Show a countdown bar that drains over the duration." },
-        "replace": { "name": "Replace", "description": "Clear other pop-ups first instead of stacking." },
-        "callback": { "name": "Callback URL", "description": "URL that receives shown/dismissed/button POSTs. Leave empty when using buttons — Home Assistant wires this up and fires a pipup_button event." },
-        "media_position": { "name": "Media position", "description": "Where media sits relative to the text: top, bottom, left, or right." },
-        "title_alignment": { "name": "Title alignment", "description": "Align the title left, center, or right." },
-        "message_alignment": { "name": "Message alignment", "description": "Align the message left, center, or right." },
-        "animation_type": { "name": "Animation", "description": "Entrance/exit animation: none, fade, slide, or scale." },
-        "animation_duration": { "name": "Animation duration", "description": "Animation length in milliseconds." },
-        "animation_exit": { "name": "Animate on exit", "description": "Also play the animation when the notification is dismissed." }
+        "title": {
+          "name": "Title",
+          "description": "Title text (hidden if empty)."
+        },
+        "message": {
+          "name": "Message",
+          "description": "Body text (hidden if empty)."
+        },
+        "id": {
+          "name": "ID",
+          "description": "Stable popup id. Re-sending with the same id updates the popup in place (a live stream keeps playing); also what Cancel targets."
+        },
+        "duration": {
+          "name": "Duration",
+          "description": "Seconds before the notification auto-dismisses. 0 keeps it on screen until dismissed."
+        },
+        "position": {
+          "name": "Position",
+          "description": "Where on screen the notification appears. Positions 5–8 need PiPup 0.4.0 or newer."
+        },
+        "tts": {
+          "name": "Text-to-speech",
+          "description": "Text to speak aloud on the TV."
+        },
+        "sound": {
+          "name": "Sound",
+          "description": "\"default\" for the built-in chime, or the URL of a sound to play once."
+        },
+        "image_uri": {
+          "name": "Image URL",
+          "description": "Image to show (URL or base64 data URI). Animated GIFs animate."
+        },
+        "video_uri": {
+          "name": "Video / stream URL",
+          "description": "Video file or live HLS/RTSP stream to play."
+        },
+        "web_uri": {
+          "name": "Web page URL",
+          "description": "Web page to embed."
+        },
+        "media_width": {
+          "name": "Media width",
+          "description": "Width of the media in pixels."
+        },
+        "web_height": {
+          "name": "Web height",
+          "description": "Older name for Media height; still works for web pages."
+        },
+        "background_color": {
+          "name": "Background color",
+          "description": "Card background, [AA]RRGGBB."
+        },
+        "title_color": {
+          "name": "Title color",
+          "description": "Title color, [AA]RRGGBB."
+        },
+        "title_size": {
+          "name": "Title size",
+          "description": "Title text size."
+        },
+        "message_color": {
+          "name": "Message color",
+          "description": "Body color, [AA]RRGGBB."
+        },
+        "message_size": {
+          "name": "Message size",
+          "description": "Body text size."
+        },
+        "corner_radius": {
+          "name": "Corner radius",
+          "description": "Rounds the card corners (px)."
+        },
+        "border_color": {
+          "name": "Border color",
+          "description": "Border color, [AA]RRGGBB."
+        },
+        "border_width": {
+          "name": "Border width",
+          "description": "Border thickness in px (requires a border color)."
+        },
+        "urgency": {
+          "name": "Urgency",
+          "description": "info / warning / critical — a blue / orange / red border preset."
+        },
+        "muted": {
+          "name": "Muted",
+          "description": "Play video/web/WHEP/grid media without audio, so the popup never grabs audio focus. WHEP and grids are muted unless set to false."
+        },
+        "buttons": {
+          "name": "Buttons",
+          "description": "Up to 3 remote-operable buttons, each with an id and a label. Pressing one fires a pipup_button event and dismisses the popup."
+        },
+        "button_color": {
+          "name": "Button color",
+          "description": "Button background color, [AA]RRGGBB."
+        },
+        "button_text_color": {
+          "name": "Button text color",
+          "description": "Button label color, [AA]RRGGBB; auto-contrasts when omitted."
+        },
+        "icon_uri": {
+          "name": "Icon URI",
+          "description": "Small leading icon (URL or base64 data URI)."
+        },
+        "show_progress": {
+          "name": "Show progress bar",
+          "description": "Show a countdown bar that drains over the duration."
+        },
+        "replace": {
+          "name": "Replace",
+          "description": "Clear other pop-ups first instead of stacking."
+        },
+        "callback": {
+          "name": "Callback URL",
+          "description": "URL that receives shown/dismissed/button POSTs. Leave empty when using buttons — Home Assistant wires this up and fires a pipup_button event."
+        },
+        "media_position": {
+          "name": "Media position",
+          "description": "Where media sits relative to the text: top, bottom, left, or right."
+        },
+        "title_alignment": {
+          "name": "Title alignment",
+          "description": "Align the title left, center, or right."
+        },
+        "message_alignment": {
+          "name": "Message alignment",
+          "description": "Align the message left, center, or right."
+        },
+        "animation_type": {
+          "name": "Animation",
+          "description": "Entrance/exit animation: none, fade, slide, or scale."
+        },
+        "animation_duration": {
+          "name": "Animation duration",
+          "description": "Animation length in milliseconds."
+        },
+        "animation_exit": {
+          "name": "Animate on exit",
+          "description": "Also play the animation when the notification is dismissed."
+        },
+        "fullscreen": {
+          "name": "Full screen",
+          "description": "Fill the screen with the popup (media scaled to fit). Needs PiPup 0.5.0."
+        },
+        "opacity": {
+          "name": "Opacity",
+          "description": "Popup opacity from 0 to 1, so live TV shows through."
+        },
+        "camera_entity": {
+          "name": "Camera",
+          "description": "A Home Assistant camera to show. Home Assistant hands the TV a signed link to its own camera proxy (or HLS stream, or an uploaded snapshot), so the TV never needs the camera's address or password. A snapshot is used as the poster while the live view starts."
+        },
+        "camera_mode": {
+          "name": "Camera mode",
+          "description": "mjpeg (default): live MJPEG from Home Assistant's camera proxy. stream: HLS from the stream integration (needs it set up; a few seconds behind). snapshot: one still image, uploaded to the TV (no buttons)."
+        },
+        "whep_uri": {
+          "name": "WHEP URL",
+          "description": "WebRTC stream from a WHEP endpoint such as go2rtc's /api/webrtc?src=STREAM; well under a second behind the camera. Needs PiPup 0.4.0."
+        },
+        "grid": {
+          "name": "Camera grid",
+          "description": "Up to 9 WHEP streams shown as a grid: a list of URLs, or of items with uri, label and poster. All must come from the same go2rtc. Needs PiPup 0.5.0."
+        },
+        "poster_uri": {
+          "name": "Poster URL",
+          "description": "Still image shown while a video, web page or WHEP stream starts, faded out on its first frame."
+        },
+        "poster_mode": {
+          "name": "Poster mode",
+          "description": "How the poster fills the media box: fit, fill, stretch or center. When set, the box keeps its requested size instead of taking the poster's shape. Needs PiPup 0.5.0."
+        },
+        "media_height": {
+          "name": "Media height",
+          "description": "Height of web, WHEP or grid media in pixels."
+        },
+        "buffer_ms": {
+          "name": "Buffer",
+          "description": "Video buffer in milliseconds. 150–300 cuts RTSP delay to about 1–2 s; raise it if the stream stutters. Needs PiPup 0.5.0."
+        },
+        "decoder": {
+          "name": "Video decoder",
+          "description": "auto, hardware or software. Software helps TVs whose hardware decoder is busy with live TV. Needs PiPup 0.5.0."
+        },
+        "grid_columns": {
+          "name": "Grid columns",
+          "description": "Columns in the camera grid (default: 2 up to 4 cameras, else 3)."
+        },
+        "grid_labels": {
+          "name": "Grid labels",
+          "description": "Show each camera's label in the grid."
+        },
+        "tts_language": {
+          "name": "Text-to-speech language",
+          "description": "BCP-47 language for the spoken text, e.g. nl-NL. Falls back to the TV's language."
+        },
+        "sound_volume": {
+          "name": "Sound volume",
+          "description": "Volume of the sound, 0 to 1. What the TV is playing ducks briefly."
+        },
+        "dismiss_screensaver": {
+          "name": "End screensaver",
+          "description": "End the TV's screensaver before showing the popup (default on)."
+        }
+      }
+    },
+    "dismiss": {
+      "name": "Dismiss notification",
+      "description": "Close a pop-up on a PiPup TV, or all of them.",
+      "fields": {
+        "id": {
+          "name": "ID",
+          "description": "Id of the popup to close. Leave empty to close every popup."
+        }
       }
     }
   },
   "selector": {
-    "position": { "options": { "0": "Top right", "1": "Top left", "2": "Bottom right", "3": "Bottom left", "4": "Center" } },
-    "urgency": { "options": { "info": "Info", "warning": "Warning", "critical": "Critical" } },
-    "media_position": { "options": { "0": "Top (above text)", "1": "Bottom (below text)", "2": "Left of text", "3": "Right of text" } },
-    "title_alignment": { "options": { "0": "Left", "1": "Center", "2": "Right" } },
-    "message_alignment": { "options": { "0": "Left", "1": "Center", "2": "Right" } },
-    "animation_type": { "options": { "none": "None", "fade": "Fade", "slide": "Slide", "scale": "Scale" } }
+    "position": {
+      "options": {
+        "0": "Top right",
+        "1": "Top left",
+        "2": "Bottom right",
+        "3": "Bottom left",
+        "4": "Center",
+        "5": "Top center",
+        "6": "Bottom center",
+        "7": "Center left",
+        "8": "Center right"
+      }
+    },
+    "urgency": {
+      "options": {
+        "info": "Info",
+        "warning": "Warning",
+        "critical": "Critical"
+      }
+    },
+    "media_position": {
+      "options": {
+        "0": "Top (above text)",
+        "1": "Bottom (below text)",
+        "2": "Left of text",
+        "3": "Right of text"
+      }
+    },
+    "title_alignment": {
+      "options": {
+        "0": "Left",
+        "1": "Center",
+        "2": "Right"
+      }
+    },
+    "message_alignment": {
+      "options": {
+        "0": "Left",
+        "1": "Center",
+        "2": "Right"
+      }
+    },
+    "animation_type": {
+      "options": {
+        "none": "None",
+        "fade": "Fade",
+        "slide": "Slide",
+        "scale": "Scale"
+      }
+    },
+    "camera_mode": {
+      "options": {
+        "mjpeg": "Live (MJPEG)",
+        "stream": "Live (HLS stream)",
+        "snapshot": "Snapshot"
+      }
+    },
+    "poster_mode": {
+      "options": {
+        "fit": "Fit",
+        "fill": "Fill",
+        "stretch": "Stretch",
+        "center": "Center"
+      }
+    },
+    "decoder": {
+      "options": {
+        "auto": "Automatic",
+        "hardware": "Hardware",
+        "software": "Software"
+      }
+    }
+  },
+  "issues": {
+    "overlay_permission": {
+      "title": "PiPup on {name} cannot show popups",
+      "description": "PiPup on **{name}** is not allowed to display over other apps, so no popup can appear. Grant it on the TV (Settings > Apps > PiPup > Display over other apps), or from a computer with adb:\n\n`{command}`\n\nThis notice clears itself once the TV reports the permission."
+    }
   }
 }

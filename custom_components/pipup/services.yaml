@@ -21,8 +21,8 @@ send:
       example: 20
       selector:
         number:
-          min: 1
-          max: 600
+          min: 0
+          max: 86400
           unit_of_measurement: seconds
           mode: box
     position:
@@ -36,13 +36,35 @@ send:
             - "2"
             - "3"
             - "4"
-    tts:
-      example: "Someone is at the front door"
+            - "5"
+            - "6"
+            - "7"
+            - "8"
+    fullscreen:
       selector:
-        text:
-    sound:
+        boolean:
+    opacity:
+      example: 0.9
       selector:
-        text:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+          mode: slider
+    camera_entity:
+      example: camera.front_door
+      selector:
+        entity:
+          domain: camera
+    camera_mode:
+      example: mjpeg
+      selector:
+        select:
+          translation_key: camera_mode
+          options:
+            - mjpeg
+            - stream
+            - snapshot
     image_uri:
       example: "https://camera.local/snapshot.jpg"
       selector:
@@ -54,22 +76,98 @@ send:
     web_uri:
       selector:
         text:
+    whep_uri:
+      example: "http://go2rtc.local:1984/api/webrtc?src=front_door"
+      selector:
+        text:
+    grid:
+      example: '["http://go2rtc.local:1984/api/webrtc?src=front", {"uri": "http://go2rtc.local:1984/api/webrtc?src=back", "label": "Back"}]'
+      selector:
+        object:
+    poster_uri:
+      example: "https://camera.local/snapshot.jpg"
+      selector:
+        text:
+    poster_mode:
+      selector:
+        select:
+          translation_key: poster_mode
+          options:
+            - fit
+            - fill
+            - stretch
+            - center
     media_width:
       example: 480
       selector:
         number:
           min: 64
-          max: 1920
+          max: 3840
+          unit_of_measurement: px
+          mode: box
+    media_height:
+      selector:
+        number:
+          min: 64
+          max: 2160
           unit_of_measurement: px
           mode: box
     web_height:
       selector:
         number:
           min: 64
-          max: 1080
+          max: 2160
           unit_of_measurement: px
           mode: box
     muted:
+      selector:
+        boolean:
+    buffer_ms:
+      example: 300
+      selector:
+        number:
+          min: 100
+          max: 10000
+          unit_of_measurement: ms
+          mode: box
+    decoder:
+      selector:
+        select:
+          translation_key: decoder
+          options:
+            - auto
+            - hardware
+            - software
+    grid_columns:
+      selector:
+        number:
+          min: 1
+          max: 3
+          mode: box
+    grid_labels:
+      selector:
+        boolean:
+    tts:
+      example: "Someone is at the front door"
+      selector:
+        text:
+    tts_language:
+      example: en-US
+      selector:
+        text:
+    sound:
+      example: default
+      selector:
+        text:
+    sound_volume:
+      example: 0.5
+      selector:
+        number:
+          min: 0
+          max: 1
+          step: 0.05
+          mode: slider
+    dismiss_screensaver:
       selector:
         boolean:
     background_color:
@@ -192,3 +290,14 @@ send:
     animation_exit:
       selector:
         boolean:
+
+dismiss:
+  target:
+    entity:
+      integration: pipup
+      domain: notify
+  fields:
+    id:
+      example: doorbell
+      selector:
+        text:
