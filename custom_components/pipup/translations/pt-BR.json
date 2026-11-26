@@ -29,7 +29,24 @@
   "entity": {
     "binary_sensor": {
       "connectivity": {
-        "name": "Conectividade"
+        "name": "Conectividade",
+        "state_attributes": {
+          "version": {
+            "name": "Versão do app"
+          },
+          "active": {
+            "name": "Pop-up ativo"
+          },
+          "count": {
+            "name": "Quantidade de pop-ups"
+          },
+          "auth_enabled": {
+            "name": "Autenticação ativada"
+          },
+          "push": {
+            "name": "Atualização imediata (push)"
+          }
+        }
       },
       "screen": {
         "name": "Tela",
@@ -53,10 +70,35 @@
     },
     "sensor": {
       "popups": {
-        "name": "Pop-ups na tela"
+        "name": "Pop-ups na tela",
+        "state_attributes": {
+          "popups": {
+            "name": "Pop-ups"
+          }
+        }
       },
       "last_popup": {
-        "name": "Último pop-up"
+        "name": "Último pop-up",
+        "state_attributes": {
+          "position": {
+            "name": "Posição"
+          },
+          "media": {
+            "name": "Mídia"
+          },
+          "duration": {
+            "name": "Duração"
+          },
+          "buttons": {
+            "name": "Botões"
+          },
+          "tts": {
+            "name": "Texto para fala"
+          },
+          "sound": {
+            "name": "Som"
+          }
+        }
       }
     },
     "button": {
@@ -155,11 +197,11 @@
         },
         "urgency": {
           "name": "Urgência",
-          "description": "info / warning / critical, com predefinições de borda azul, laranja ou vermelha."
+          "description": "Informação (info), Aviso (warning) ou Crítico (critical): borda azul, laranja ou vermelha."
         },
         "muted": {
           "name": "Sem áudio",
-          "description": "Reproduz vídeos ou mídias da web sem áudio, evitando que o pop-up assuma o controle do áudio."
+          "description": "Reproduz vídeo, página web, WHEP ou grade sem áudio, para o pop-up nunca assumir o controle do áudio. WHEP e grades ficam sem áudio, a menos que a opção seja desativada."
         },
         "buttons": {
           "name": "Botões",
@@ -203,7 +245,7 @@
         },
         "animation_type": {
           "name": "Animação",
-          "description": "Animação de entrada e saída: nenhuma, desaparecer, deslizar ou ampliar."
+          "description": "Animação de entrada e saída: nenhuma, esmaecer, deslizar ou ampliar."
         },
         "animation_duration": {
           "name": "Duração da animação",
@@ -227,7 +269,7 @@
         },
         "camera_mode": {
           "name": "Modo da câmera",
-          "description": "mjpeg (padrão): MJPEG ao vivo pelo proxy de câmera do Home Assistant. stream: HLS pela integração stream (precisa estar configurada; alguns segundos de atraso). snapshot: uma imagem enviada à TV (sem botões)."
+          "description": "Ao vivo MJPEG (mjpeg, padrão): pelo proxy de câmera do Home Assistant. Stream HLS (stream): pela integração stream, que precisa estar configurada; alguns segundos de atraso. Instantâneo (snapshot): uma imagem enviada à TV, sem botões."
         },
         "whep_uri": {
           "name": "URL WHEP",
@@ -243,7 +285,7 @@
         },
         "poster_mode": {
           "name": "Modo do pôster",
-          "description": "Como o pôster preenche a área da mídia: fit, fill, stretch ou center. Com um modo definido, a área mantém o tamanho pedido em vez de seguir o formato do pôster. Exige o PiPup 0.5.0."
+          "description": "Como o pôster preenche a área da mídia: Ajustar (fit), Preencher (fill), Esticar (stretch) ou Centralizar (center). Com um modo definido, a área mantém o tamanho pedido em vez de seguir o formato do pôster. Exige o PiPup 0.5.0."
         },
         "media_height": {
           "name": "Altura da mídia",
@@ -255,7 +297,7 @@
         },
         "decoder": {
           "name": "Decodificador de vídeo",
-          "description": "auto, hardware ou software. Software ajuda TVs cujo decodificador de hardware está ocupado com a TV ao vivo. Exige o PiPup 0.5.0."
+          "description": "Automático (auto), Hardware (hardware) ou Software (software). Software ajuda TVs cujo decodificador de hardware está ocupado com a TV ao vivo. Exige o PiPup 0.5.0."
         },
         "grid_columns": {
           "name": "Colunas da grade",

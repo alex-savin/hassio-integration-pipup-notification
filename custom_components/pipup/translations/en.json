@@ -29,7 +29,24 @@
   "entity": {
     "binary_sensor": {
       "connectivity": {
-        "name": "Connectivity"
+        "name": "Connectivity",
+        "state_attributes": {
+          "version": {
+            "name": "App version"
+          },
+          "active": {
+            "name": "Popup active"
+          },
+          "count": {
+            "name": "Popup count"
+          },
+          "auth_enabled": {
+            "name": "Authentication enabled"
+          },
+          "push": {
+            "name": "Push updates"
+          }
+        }
       },
       "screen": {
         "name": "Screen",
@@ -53,10 +70,35 @@
     },
     "sensor": {
       "popups": {
-        "name": "Popups on screen"
+        "name": "Popups on screen",
+        "state_attributes": {
+          "popups": {
+            "name": "Popups"
+          }
+        }
       },
       "last_popup": {
-        "name": "Last popup"
+        "name": "Last popup",
+        "state_attributes": {
+          "position": {
+            "name": "Position"
+          },
+          "media": {
+            "name": "Media"
+          },
+          "duration": {
+            "name": "Duration"
+          },
+          "buttons": {
+            "name": "Buttons"
+          },
+          "tts": {
+            "name": "Text-to-speech"
+          },
+          "sound": {
+            "name": "Sound"
+          }
+        }
       }
     },
     "button": {
